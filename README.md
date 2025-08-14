@@ -6,7 +6,7 @@ Voice-activated application that listens for "Nvidia clip that" and triggers Alt
 - 🎙️ Voice activation using VOSK ASR
 - 🎯 Handles common mishearings (nvideo, invidia, etc.)
 - ⚡ Low latency response
-- 🎮 Works with Nvidia ShadowPlay/GeForce Experience
+- 🎮 Works with Nvidia Nvidia Overlay/Instant Replay
 - 📥 Automatic model download on first run
 
 ## Setup
@@ -16,7 +16,7 @@ Voice-activated application that listens for "Nvidia clip that" and triggers Alt
    pip install -r requirements.txt
    ```
 
-2. **Configure Nvidia ShadowPlay:**
+2. **Configure Nvidia Overlay/instant replay:**
    - Ensure Alt+F10 is set as your clip hotkey in GeForce Experience
 
 3. **Run the app:**
