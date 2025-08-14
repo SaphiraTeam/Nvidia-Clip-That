@@ -1,0 +1,11 @@
+trigger_phrases:
+- nvidia clip that
+- nvideo clip that
+- nvidia clip it
+- nvideo clip it
+- nvidia clip dat
+- nvidia klip that
+- invidia clip that
+threshold: 0.85
+partial_threshold: 0.9
+hotkey: alt+f10
