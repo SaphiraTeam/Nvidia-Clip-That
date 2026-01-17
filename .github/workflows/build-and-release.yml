@@ -1,0 +1,136 @@
+name: Build and Release (Windows EXE)
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Tag name for release (example: v1.0.0).'
+        required: false
+      create_release:
+        description: 'Create a GitHub release after building (true/false)'
+        required: false
+        default: 'true'
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: Build EXE (Windows)
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Cache pip
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install --no-cache-dir -r requirements.txt
+
+      - name: Ensure VOSK model is present
+        shell: pwsh
+        run: |
+          if (-not (Test-Path 'vosk-model-small-en-us-0.15')) {
+            Write-Host "VOSK model not found - downloading..."
+            Invoke-WebRequest -Uri 'https://alphacephei.com/vosk/models/vosk-model-small-en-us-0.15.zip' -OutFile 'vosk-model.zip'
+            Expand-Archive -Path 'vosk-model.zip' -DestinationPath .
+            Remove-Item 'vosk-model.zip'
+          } else {
+            Write-Host "✅ VOSK model found — will bundle with exe"
+          }
+
+      - name: Build exe with PyInstaller
+        run: |
+          python build.py
+
+      - name: Upload exe artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: NvidiaClipThat
+          path: dist/NvidiaClipThat.exe
+
+  release:
+    name: Create GitHub release and attach artifacts
+    needs: build
+    runs-on: ubuntu-latest
+    if: >-
+      startsWith(github.ref, 'refs/tags/')
+      || (github.event_name == 'workflow_dispatch' && (github.event.inputs.create_release == 'true'))
+
+    steps:
+      - name: Download exe artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: NvidiaClipThat
+          path: dist
+
+      - name: Create checksum
+        run: |
+          cd dist
+          sha256sum NvidiaClipThat.exe > NvidiaClipThat.exe.sha256
+          ls -l
+
+      - name: Compute tag to create
+        id: tag
+        run: |
+          if [ "${{ github.event_name }}" = "push" ]; then
+            echo "TAG=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+          else
+            if [ -n "${{ github.event.inputs.tag }}" ]; then
+              echo "TAG=${{ github.event.inputs.tag }}" >> $GITHUB_OUTPUT
+            else
+              echo "TAG=release-$(date -u +%Y%m%d%H%M%S)" >> $GITHUB_OUTPUT
+            fi
+          fi
+
+      - name: Create release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ steps.tag.outputs.TAG }}
+          release_name: ${{ steps.tag.outputs.TAG }}
+          body: "Automated build (Windows EXE)"
+          draft: false
+          prerelease: false
+
+      - name: Upload EXE asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./dist/NvidiaClipThat.exe
+          asset_name: NvidiaClipThat.exe
+          asset_content_type: application/octet-stream
+
+      - name: Upload checksum asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./dist/NvidiaClipThat.exe.sha256
+          asset_name: NvidiaClipThat.exe.sha256
+          asset_content_type: text/plain

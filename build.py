@@ -5,13 +5,13 @@ import shutil
 def build_exe():
     """Build the executable using PyInstaller"""
     
-    # Clean previous builds
+    
     if os.path.exists("dist"):
         shutil.rmtree("dist")
     if os.path.exists("build"):
         shutil.rmtree("build")
     
-    # Check if model exists for bundling
+    
     model_path = "vosk-model-small-en-us-0.15"
     add_data_args = []
     
@@ -20,12 +20,16 @@ def build_exe():
         add_data_args = [f'--add-data={model_path};{model_path}']
     else:
         print("ℹ️ VOSK model not found, will download on first run")
+
+    
+    if os.path.exists("sfx"):
+        add_data_args.append('--add-data=sfx;sfx')
     
     PyInstaller.__main__.run([
         'nvidia_clip_that.py',
         '--onefile',
         '--name=NvidiaClipThat',
-        '--icon=NONE',  # Add your icon path here if you have one
+        '--icon=NONE',  
     '--additional-hooks-dir=hooks',
         *add_data_args,
         '--hidden-import=sounddevice',
@@ -34,10 +38,11 @@ def build_exe():
     '--hidden-import=pystray',
     '--hidden-import=PIL',
     '--hidden-import=yaml',
+    '--hidden-import=playsound3',
     '--hidden-import=win32api',
     '--hidden-import=win32con',
     '--hidden-import=win32gui',
-    '--noconsole',  # windowed app, runs in system tray
+    '--noconsole',  
     ])
     
     print("✅ Build complete! Check the 'dist' folder for NvidiaClipThat.exe")

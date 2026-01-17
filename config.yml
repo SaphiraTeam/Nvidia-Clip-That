@@ -6,6 +6,21 @@ trigger_phrases:
 - nvidia clip dat
 - nvidia klip that
 - invidia clip that
+start_phrases:
+- nvidia start recording
+- nvideo start recording
+- invidia start recording
+- nvidia begin recording
+- nvidia start the recording
+stop_phrases:
+- nvidia stop recording
+- nvideo stop recording
+- invidia stop recording
+- nvidia end recording
+- nvidia stop the recording
 threshold: 0.85
 partial_threshold: 0.9
 hotkey: alt+f10
+debounce_seconds: 2.0
+stop_mode: toggle_unsafe  # 'strict' or 'toggle_unsafe'
+console_logging: true

@@ -7,3 +7,4 @@ pystray==0.19.5
 Pillow==10.3.0
 PyYAML==6.0.2
 pywin32==306
+playsound3==3.2.6
