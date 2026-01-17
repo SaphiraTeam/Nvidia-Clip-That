@@ -56,10 +56,13 @@ jobs:
             Expand-Archive -Path 'vosk-model.zip' -DestinationPath .
             Remove-Item 'vosk-model.zip'
           } else {
-            Write-Host "VOSK model found will bundle with exe"
+            Write-Host "Found VOSK model, will bundle with exe"
           }
 
       - name: Build exe with PyInstaller
+        env:
+          PYTHONUTF8: '1'
+          PYTHONIOENCODING: 'utf-8'
         run: |
           python build.py
 

@@ -16,10 +16,10 @@ def build_exe():
     add_data_args = []
     
     if os.path.exists(model_path):
-        print(f"✅ Found VOSK model, will bundle with exe")
+        print("Found VOSK model, will bundle with exe")
         add_data_args = [f'--add-data={model_path};{model_path}']
     else:
-        print("ℹ️ VOSK model not found, will download on first run")
+        print("VOSK model not found, will download on first run")
 
     
     if os.path.exists("sfx"):
@@ -45,7 +45,7 @@ def build_exe():
     '--noconsole',  
     ])
     
-    print("✅ Build complete! Check the 'dist' folder for NvidiaClipThat.exe")
+    print("Build complete! Check the 'dist' folder for NvidiaClipThat.exe")
 
 if __name__ == "__main__":
     build_exe()
